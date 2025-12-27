@@ -1,104 +1,182 @@
-# CloudScale SaaS Framework
+# CloudScale: Enterprise Multi-Tenant SaaS Framework
 
-## Overview
-**CloudScale** is a robust, production-ready B2B SaaS boilerplate engineered with a focus on **Enterprise-Grade Multi-Tenancy** and **Isolated Data Architectures**. It provides a scalable foundation for startups requiring complex organizational hierarchies, secure data partitioning, and granular permission management.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D%2018.0.0-brightgreen)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/docker-supported-blue)](https://www.docker.com/)
+[![Prisma](https://img.shields.io/badge/ORM-Prisma-2D3748)](https://www.prisma.io/)
 
-Built for high-concurrency environments, this platform ensures that every tenant operates in a virtualized workspace, preventing cross-tenant data leakage while maintaining high system performance.
+---
+
+## Project Overview
+
+CloudScale is a production-ready Enterprise Multi-Tenant SaaS Framework designed for startups and teams building B2B platforms.
+
+It solves the hardest SaaS problems out-of-the-box:
+
+- Multi-Tenancy
+- Strict Data Isolation
+- Role-Based Access Control (RBAC)
+- Audit Logging
+- Subscription Billing (Stripe)
+
+CloudScale follows a Shared Database, Isolated Rows architecture, allowing thousands of tenants to safely coexist inside a single PostgreSQL database while guaranteeing logical and physical data separation.
+
+---
+
+## System Architecture & Request Flow
+
+Request → Tenant Context pipeline:
+
+1. Tenant ID extracted from JWT or trusted request header  
+2. User authorization verified against tenant  
+3. Prisma automatically scopes queries using tenant_id  
+4. Only tenant-isolated data is returned  
+
+Tenant A can never access Tenant B data.
+
+---
 
 ## Core Capabilities
-* **Dynamic Multi-Tenancy:** Automated workspace provisioning with unique UUID-based data isolation.
-* **RBAC+ (Advanced Access Control):** Beyond simple roles; supports granular permission sets for Super Admins, Managers, and Contributors.
-* **Activity Auditing:** Comprehensive logging of project mutations and user actions per organization.
-* **Real-time Synchronization:** WebSocket-ready architecture for instant task and project status updates.
-* **Scalable Task Engine:** Advanced project orchestration featuring priority queuing and deadline monitoring.
-* **Identity Management:** Secure session handling using HttpOnly cookies and Bcrypt-protected credential storage.
-* **Automated Provisioning:** Integrated Docker scripts for one-command deployment of the entire microservice ecosystem.
 
-## Technical Architecture
-
-### **Frontend Interface**
-* **Core:** React.js 18 (Functional Components & Hooks)
-* **Routing:** React Router v6 (Protected & Public Route Wrappers)
-* **Data Fetching:** Axios with Interceptor-based Auth handling
-* **UI System:** Modern Modular CSS / PostCSS
-
-### **Backend Services**
-* **Engine:** Node.js & Express.js (RESTful Design)
-* **Persistence:** PostgreSQL 15+
-* **ORM Layer:** Prisma (Type-safe Database Access)
-* **Security Suite:** JSON Web Tokens (JWT), CORS policies, and Helmet middleware
+- Dynamic Tenant Provisioning
+- Advanced RBAC (Super Admin, Tenant Admin, User)
+- Immutable Audit Logs
+- Real-Time WebSocket Sync
+- Stripe Subscription Billing
+- Docker-First Deployment
 
 ---
 
-## System Installation
+## Project Structure
 
-### **Prerequisites**
-* **Docker Desktop** (Engine 20.10+)
-* **Node.js LTS** (If running locally)
-
-### **Quick Start (Containerized)**
-The most efficient way to spin up the development environment:
-
-1.  **Clone the Source**
-    ```bash
-    git clone [https://github.com/gowrishjanapareddy/saas_project_5.git](https://github.com/gowrishjanapareddy/saas_project_5.git)
-    cd saas_project_5
-    ```
-
-2.  **Initialize Environment**
-    Create a `.env` file in the root directory:
-    ```bash
-    # Database Settings
-    POSTGRES_USER=dev_admin
-    POSTGRES_PASSWORD=dev_password_99
-    POSTGRES_DB=cloudscale_db
-
-    # Auth Settings
-    JWT_SECRET=generate_your_secure_string_here
-    ```
-
-3.  **Boot System**
-    ```bash
-    docker-compose up -d --build
-    ```
-
-4.  **Verification**
-    * **Frontend UI:** `http://localhost:3000`
-    * **API Gateway:** `http://localhost:5000/api/v1`
+```text
+.
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma
+│   │   └── migrations/
+│   ├── src/
+│   │   ├── middleware/
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── utils/
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── context/
+│   │   └── pages/
+│   └── Dockerfile
+├── docker-compose.yml
+└── README.md
+```
 
 ---
 
-## API Reference (Version 1)
+## Installation & Setup
 
-### **Identity & Access**
-| Endpoint | Method | Action |
-| :--- | :--- | :--- |
-| `/api/v1/auth/signup` | `POST` | Create new tenant & admin user |
-| `/api/v1/auth/login` | `POST` | Authenticate and receive session token |
+### Quick Start (Docker – Recommended)
 
-### **Workspace Management**
-| Endpoint | Method | Action |
-| :--- | :--- | :--- |
-| `/api/v1/projects` | `GET` | Fetch all projects for the active tenant |
-| `/api/v1/projects` | `POST` | Initialize a new project workspace |
-| `/api/v1/tasks/:id` | `PATCH` | Update task lifecycle status |
-| `/api/v1/users` | `GET` | (Admin Only) Manage organization members |
+```bash
+git clone https://github.com/gowrishjanapareddy/saas_project_5.git
+cd saas_project_5
+
+cat <<EOF > .env
+POSTGRES_USER=dev_admin
+POSTGRES_PASSWORD=dev_password_99
+POSTGRES_DB=cloudscale_db
+DATABASE_URL=postgresql://dev_admin:dev_password_99@postgres:5432/cloudscale_db
+JWT_SECRET=your_32_character_random_string
+STRIPE_SECRET_KEY=sk_test_your_key_here
+EOF
+
+docker-compose up -d --build
+
+docker-compose exec backend npx prisma migrate dev --name init
+docker-compose exec backend npm run seed
+```
+
+---
+
+### Manual Development Setup (Without Docker)
+
+```bash
+cd backend
+npm install
+npx prisma generate
+npx prisma migrate dev
+npm run dev
+
+cd frontend
+npm install
+npm start
+```
+
+---
+
+## Stripe Integration
+
+```text
+Webhook Endpoint: /api/v1/webhooks/stripe
+Plan Config: backend/src/config/plans.ts
+Frontend Hook: useCheckout()
+```
+
+---
+
+## API Reference (v1)
+
+```text
+POST /api/v1/auth/signup   - Register Tenant + Admin
+POST /api/v1/auth/login    - Authenticate and receive JWT
+GET  /api/v1/projects      - Fetch tenant projects
+GET  /api/v1/users         - List organization members
+```
+
+All endpoints are automatically tenant-scoped.
 
 ---
 
 ## Development Credentials
 
-For testing purposes, use the following pre-seeded accounts:
+```text
+System Super Admin
+Email: root@cloudscale.io
+Password: CloudScale@2025
 
-| Role | Username | Password |
-| :--- | :--- | :--- |
-| **System SuperAdmin** | `root@cloudscale.io` | `CloudScale@2025` |
-| **Organization Admin** | `admin@acme-corp.com` | `AcmePass123` |
-| **Standard Member** | `user@acme-corp.com` | `UserPass123` |
+Organization Admin
+Email: admin@acme-corp.com
+Password: AcmePass123
+
+Standard User
+Email: user@acme-corp.com
+Password: UserPass123
+```
 
 ---
 
+## Contribution Guide
 
-## 📄 License
+```bash
+git checkout -b feature/AmazingFeature
+git commit -m "feat: add amazing feature"
+git push origin feature/AmazingFeature
+```
 
-Distributed under the **MIT License**. See `LICENSE` for more information.
+Open a Pull Request on GitHub.
+
+---
+
+## License
+
+MIT License
+
+---
+
+## Support
+
+If this project helps you, please star the repository.
+
+Happy Building 
