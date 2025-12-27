@@ -100,4 +100,5 @@ For testing purposes, use the following pre-seeded accounts:
 
 
 ## 📄 License
+
 Distributed under the **MIT License**. See `LICENSE` for more information.
