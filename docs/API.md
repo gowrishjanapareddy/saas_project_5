@@ -29,6 +29,8 @@ Checks whether the API server and database connection are healthy.
 }
 ```
 
+---
+
 ## 2. Authentication Module
 
 ### 2.1 Register Tenant (Sign Up)
@@ -47,6 +49,7 @@ Registers a new **Organization (Tenant)** along with its first **Admin user**.
   "adminEmail": "admin@acme.com",
   "password": "SecurePassword123"
 }
+```
 
 #### Response (201 Created)
 
@@ -56,6 +59,8 @@ Registers a new **Organization (Tenant)** along with its first **Admin user**.
   "tenantId": "uuid-string"
 }
 ```
+
+---
 
 ### 2.2 Login
 
@@ -87,6 +92,8 @@ Authenticates a user and returns a **JWT access token**.
 }
 ```
 
+---
+
 ### 2.3 Get Current User
 
 Retrieves the profile of the currently logged-in user.
@@ -107,7 +114,9 @@ Retrieves the profile of the currently logged-in user.
 }
 ```
 
-## 3️. Tenant Management (Super Admin)
+---
+
+## 3. Tenant Management (Super Admin)
 
 ### 3.1 List All Tenants
 
@@ -132,6 +141,8 @@ Accessible only by **Super Admin** users.
 }
 ```
 
+---
+
 ### 3.2 Get Tenant Details
 
 Retrieves detailed information for a specific tenant.
@@ -149,6 +160,8 @@ Retrieves detailed information for a specific tenant.
 }
 ```
 
+---
+
 ### 3.3 Update Tenant
 
 Updates tenant details such as name or status.
@@ -165,7 +178,9 @@ Updates tenant details such as name or status.
 }
 ```
 
-## 4️. User Management (Tenant Admin)
+---
+
+## 4. User Management (Tenant Admin)
 
 ### 4.1 List Users
 
@@ -186,6 +201,8 @@ Lists all employees within the requester’s tenant.
 }
 ```
 
+---
+
 ### 4.2 Create User
 
 Adds a new employee to the tenant.
@@ -204,6 +221,8 @@ Adds a new employee to the tenant.
 }
 ```
 
+---
+
 ### 4.3 Update User
 
 Updates an existing user’s profile or role.
@@ -220,6 +239,8 @@ Updates an existing user’s profile or role.
 }
 ```
 
+---
+
 ### 4.4 Delete User
 
 Removes a user from the tenant.
@@ -229,7 +250,7 @@ Removes a user from the tenant.
 
 ---
 
-## 5️. Project Management
+## 5. Project Management
 
 ### 5.1 List Projects
 
@@ -250,6 +271,8 @@ Lists all projects belonging to the requester’s tenant.
 }
 ```
 
+---
+
 ### 5.2 Create Project
 
 Creates a new project within the tenant.
@@ -266,6 +289,8 @@ Creates a new project within the tenant.
   "status": "active"
 }
 ```
+
+---
 
 ### 5.3 Get Project Details
 
@@ -297,7 +322,7 @@ Updates an existing project’s details.
 
 ---
 
-## 6️. Task Management
+## 6. Task Management
 
 ### 6.1 List Tasks
 
@@ -318,6 +343,8 @@ Retrieves all tasks associated with a specific project.
 }
 ```
 
+---
+
 ### 6.2 Create Task
 
 Creates a new task within a specific project.
@@ -336,6 +363,8 @@ Creates a new task within a specific project.
 }
 ```
 
+---
+
 ### 6.3 Update Task Status
 
 Quickly update a task’s status (e.g., via Kanban drag-and-drop).
@@ -351,6 +380,8 @@ Quickly update a task’s status (e.g., via Kanban drag-and-drop).
 }
 ```
 
+---
+
 ### 6.4 Update Task Details
 
 Performs a full update of a task’s information.
@@ -365,3 +396,4 @@ Performs a full update of a task’s information.
   "title": "Fix Header Bug (Updated)",
   "priority": "MEDIUM"
 }
+```
