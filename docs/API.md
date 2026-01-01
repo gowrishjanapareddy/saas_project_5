@@ -1,26 +1,32 @@
-# Multi-Tenant SaaS Platform – API Documentation
+# Multi-Tenant SaaS Platform – API Reference
 
-## Authentication & Security
-
-- **Authentication Method:** Bearer Token (JWT)
-- **Header Format:**  
-  `Authorization: Bearer <your_jwt_token>`
-- **Token Expiry:** 24 hours
-- **Base URL (Local):**  
-  `http://localhost:5000/api`
+This document describes the REST API for a multi-tenant project management platform, including authentication, tenant administration, user management, projects, and tasks.
 
 ---
 
-## System
+## Authentication & Security
 
-### 1. Health Check
+- **Auth Scheme:** Bearer authentication using JSON Web Tokens (JWT)  
+- **HTTP Header (required for protected routes):**  
+  `Authorization: Bearer <access_token>`  
+- **Access Token Lifetime:** 24 hours per issued token  
+- **Base URL (Local Dev):**  
+  `http://localhost:5000/api`
 
-Checks whether the API server and database connection are healthy.
+All endpoints that are not explicitly marked as **Public** require a valid JWT in the `Authorization` header. [web:21][web:39]
 
-- **Endpoint:** `GET /health`
-- **Access:** Public
+---
 
-#### Response (200 OK)
+## 1. System
+
+### 1.1 Health Check
+
+Use this endpoint to quickly verify that the API is reachable and the database is online.
+
+- **Method & Path:** `GET /health`  
+- **Visibility:** Public (no token required)
+
+#### Example Success Response (200 OK)
 
 ```json
 {
@@ -31,16 +37,16 @@ Checks whether the API server and database connection are healthy.
 
 ---
 
-## 2. Authentication Module
+## 2. Authentication
 
-### 2.1 Register Tenant (Sign Up)
+### 2.1 Register Tenant (Initial Onboarding)
 
-Registers a new **Organization (Tenant)** along with its first **Admin user**.
+Creates a brand-new **tenant account** and the corresponding **first admin user** in a single step.
 
-- **Endpoint:** `POST /auth/register-tenant`
-- **Access:** Public
+- **Method & Path:** `POST /auth/register-tenant`  
+- **Visibility:** Public
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
@@ -62,14 +68,14 @@ Registers a new **Organization (Tenant)** along with its first **Admin user**.
 
 ---
 
-### 2.2 Login
+### 2.2 Login (Obtain JWT)
 
-Authenticates a user and returns a **JWT access token**.
+Authenticates a user with email and password and returns a signed JWT to be used in subsequent requests.
 
-- **Endpoint:** `POST /auth/login`
-- **Access:** Public
+- **Method & Path:** `POST /auth/login`  
+- **Visibility:** Public
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
@@ -94,12 +100,12 @@ Authenticates a user and returns a **JWT access token**.
 
 ---
 
-### 2.3 Get Current User
+### 2.3 Get Current User (Session Introspection)
 
-Retrieves the profile of the currently logged-in user.
+Returns the profile of the user associated with the provided JWT.
 
-- **Endpoint:** `GET /auth/me`
-- **Access:** Protected (All Roles)
+- **Method & Path:** `GET /auth/me`  
+- **Visibility:** Protected (any authenticated role)
 
 #### Response (200 OK)
 
@@ -116,15 +122,16 @@ Retrieves the profile of the currently logged-in user.
 
 ---
 
-## 3. Tenant Management (Super Admin)
+## 3. Tenant Operations (Super Admin Scope)
+
+These endpoints are intended for **platform-level** administrators managing all tenants.
 
 ### 3.1 List All Tenants
 
-Retrieves a list of all registered tenants.  
-Accessible only by **Super Admin** users.
+Fetches a catalog of every tenant registered in the system.
 
-- **Endpoint:** `GET /tenants`
-- **Access:** Super Admin
+- **Method & Path:** `GET /tenants`  
+- **Visibility:** Protected – `super_admin` only
 
 #### Response (200 OK)
 
@@ -143,12 +150,12 @@ Accessible only by **Super Admin** users.
 
 ---
 
-### 3.2 Get Tenant Details
+### 3.2 Get Tenant by ID
 
-Retrieves detailed information for a specific tenant.
+Retrieves metadata for a specific tenant.
 
-- **Endpoint:** `GET /tenants/:id`
-- **Access:** Super Admin
+- **Method & Path:** `GET /tenants/:id`  
+- **Visibility:** Protected – `super_admin` only
 
 #### Response (200 OK)
 
@@ -162,14 +169,14 @@ Retrieves detailed information for a specific tenant.
 
 ---
 
-### 3.3 Update Tenant
+### 3.3 Update Tenant Configuration
 
-Updates tenant details such as name or status.
+Allows editing of core tenant properties, such as name or lifecycle status.
 
-- **Endpoint:** `PUT /tenants/:id`
-- **Access:** Super Admin
+- **Method & Path:** `PUT /tenants/:id`  
+- **Visibility:** Protected – `super_admin` only
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
@@ -180,14 +187,16 @@ Updates tenant details such as name or status.
 
 ---
 
-## 4. User Management (Tenant Admin)
+## 4. User Management (Within a Tenant)
 
-### 4.1 List Users
+These endpoints are used by a **Tenant Admin** to manage members of their own organization.
 
-Lists all employees within the requester’s tenant.
+### 4.1 Get Users for a Tenant
 
-- **Endpoint:** `GET /tenants/:tenantId/users`
-- **Access:** Tenant Admin
+Returns all users currently associated with the specified tenant.
+
+- **Method & Path:** `GET /tenants/:tenantId/users`  
+- **Visibility:** Protected – `tenant_admin`
 
 #### Response (200 OK)
 
@@ -203,14 +212,14 @@ Lists all employees within the requester’s tenant.
 
 ---
 
-### 4.2 Create User
+### 4.2 Create Tenant User
 
-Adds a new employee to the tenant.
+Adds a new user account under a given tenant.
 
-- **Endpoint:** `POST /tenants/:tenantId/users`
-- **Access:** Tenant Admin
+- **Method & Path:** `POST /tenants/:tenantId/users`  
+- **Visibility:** Protected – `tenant_admin`
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
@@ -223,14 +232,14 @@ Adds a new employee to the tenant.
 
 ---
 
-### 4.3 Update User
+### 4.3 Update Tenant User
 
-Updates an existing user’s profile or role.
+Updates the details or role of an existing user.
 
-- **Endpoint:** `PUT /users/:id`
-- **Access:** Tenant Admin
+- **Method & Path:** `PUT /users/:id`  
+- **Visibility:** Protected – `tenant_admin`
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
@@ -241,23 +250,25 @@ Updates an existing user’s profile or role.
 
 ---
 
-### 4.4 Delete User
+### 4.4 Delete Tenant User
 
-Removes a user from the tenant.
+Removes a user from the tenant so they can no longer access the workspace.
 
-- **Endpoint:** `DELETE /users/:id`
-- **Access:** Tenant Admin
+- **Method & Path:** `DELETE /users/:id`  
+- **Visibility:** Protected – `tenant_admin`
 
 ---
 
 ## 5. Project Management
 
-### 5.1 List Projects
+Project endpoints operate within the scope of the current tenant.
 
-Lists all projects belonging to the requester’s tenant.
+### 5.1 List Projects for Current Tenant
 
-- **Endpoint:** `GET /projects`
-- **Access:** User / Admin
+Lists all projects visible to the authenticated user’s tenant.
+
+- **Method & Path:** `GET /projects`  
+- **Visibility:** Protected – `user` or `admin`
 
 #### Response (200 OK)
 
@@ -273,14 +284,14 @@ Lists all projects belonging to the requester’s tenant.
 
 ---
 
-### 5.2 Create Project
+### 5.2 Create a New Project
 
-Creates a new project within the tenant.
+Registers a new project instance under the tenant context.
 
-- **Endpoint:** `POST /projects`
-- **Access:** Admin
+- **Method & Path:** `POST /projects`  
+- **Visibility:** Protected – `admin`
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
@@ -292,23 +303,23 @@ Creates a new project within the tenant.
 
 ---
 
-### 5.3 Get Project Details
+### 5.3 Get Project by ID
 
-Retrieves detailed information for a specific project.
+Returns the details for a specific project.
 
-- **Endpoint:** `GET /projects/:id`
-- **Access:** User / Admin
+- **Method & Path:** `GET /projects/:id`  
+- **Visibility:** Protected – `user` or `admin`
 
 ---
 
 ### 5.4 Update Project
 
-Updates an existing project’s details.
+Modifies the metadata or status of an existing project.
 
-- **Endpoint:** `PUT /projects/:id`
-- **Access:** Admin
+- **Method & Path:** `PUT /projects/:id`  
+- **Visibility:** Protected – `admin`
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
@@ -316,20 +327,22 @@ Updates an existing project’s details.
 }
 ```
 
-> **Note:**  
-> Project deletion functionality is typically mapped to  
+> **Hint:**  
+> To support hard deletion of a project, expose:  
 > `DELETE /projects/:id`
 
 ---
 
 ## 6. Task Management
 
-### 6.1 List Tasks
+Tasks are always created within the context of a specific project.
 
-Retrieves all tasks associated with a specific project.
+### 6.1 List Tasks for a Project
 
-- **Endpoint:** `GET /projects/:projectId/tasks`
-- **Access:** User / Admin
+Retrieves all tasks belonging to a particular project.
+
+- **Method & Path:** `GET /projects/:projectId/tasks`  
+- **Visibility:** Protected – `user` or `admin`
 
 #### Response (200 OK)
 
@@ -345,14 +358,14 @@ Retrieves all tasks associated with a specific project.
 
 ---
 
-### 6.2 Create Task
+### 6.2 Create Task in Project
 
-Creates a new task within a specific project.
+Adds a new task item inside a project.
 
-- **Endpoint:** `POST /projects/:projectId/tasks`
-- **Access:** Admin
+- **Method & Path:** `POST /projects/:projectId/tasks`  
+- **Visibility:** Protected – `admin`
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
@@ -365,14 +378,14 @@ Creates a new task within a specific project.
 
 ---
 
-### 6.3 Update Task Status
+### 6.3 Change Task Status (Partial Update)
 
-Quickly update a task’s status (e.g., via Kanban drag-and-drop).
+Provides a focused endpoint to change only the status of an existing task, which is ideal for Kanban-style interactions.
 
-- **Endpoint:** `PATCH /tasks/:id/status`
-- **Access:** User / Admin
+- **Method & Path:** `PATCH /tasks/:id/status`  
+- **Visibility:** Protected – `user` or `admin`
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
@@ -382,14 +395,14 @@ Quickly update a task’s status (e.g., via Kanban drag-and-drop).
 
 ---
 
-### 6.4 Update Task Details
+### 6.4 Update Task (Full Update)
 
-Performs a full update of a task’s information.
+Allows full editing of a task’s fields such as title, priority, and other attributes.
 
-- **Endpoint:** `PUT /tasks/:id`
-- **Access:** Admin
+- **Method & Path:** `PUT /tasks/:id`  
+- **Visibility:** Protected – `admin`
 
-#### Request Body (JSON)
+#### Request Body
 
 ```json
 {
