@@ -1,209 +1,143 @@
-# Technical Specification
+## Technical Specification: Multi-Tenant SaaS Platform
 
-**Project Name:** Multi-Tenant SaaS Project Management System  
-**Date:** October 26, 2025  
-**Version:** 1.0  
-**Author:** AWS Student / Lead Developer  
+**Project Name:** Multi-Tenant SaaS Project Management System
 
----
+**Date:** October 26, 2025
 
-## 1️. Project Structure
+**Version:** 1.0
 
-The project is structured as a **Monorepo** containing both the **Backend API** and the **Frontend React application**, orchestrated using **Docker Compose** at the root level.
+**Status:** Implementation Ready
 
 ---
 
-### 1.1 Root Directory Structure
+## 1. System Architecture Overview
+
+The platform implements a **containerized monorepo** strategy. By encapsulating the Frontend, Backend, and Database into a single orchestrated unit, we ensure environment consistency and simplified dependency management.
+
+---
+
+## 2. Codebase Organization
+
+### 2.1 Root Level Orchestration
+
+The root directory manages the global configuration and service discovery.
 
 ```text
 /Multi-Tenant-SaaS-Platform
-├── docker-compose.yml       # Orchestration for DB, Backend, Frontend
-├── submission.json          # Credentials for automated evaluation
-├── README.md                # Entry point documentation
-├── .gitignore               # Git ignore rules
-├── docs/                    # Architecture, PRD, Research artifacts
-├── backend/                 # Node.js/Express API Container
-└── frontend/                # React Application Container
+├── docker-compose.yml       # Service orchestration & networking
+├── submission.json          # Evaluation metadata
+├── docs/                    # Technical documentation & ERDs
+├── backend/                 # Node.js/Express API service
+└── frontend/                # React/Vite client service
+
 ```
 
-## 1.2 Backend Structure (`/backend`)
+### 2.2 Backend Service Implementation (`/backend`)
 
-The backend is built using **Node.js**, **Express**, and **Prisma**, following a modular, scalable, and maintainable architecture.
+The API follows a **Modular Layered Architecture**, separating routing, business logic, and data persistence.
+
+* **ORM:** Prisma (PostgreSQL adapter).
+* **Isolation:** Middleware-level tenant context injection.
 
 ```text
 backend/
-├── .env.example             # Template for environment variables
-├── Dockerfile               # Backend container config
-├── package.json             # Backend dependencies
-├── prisma/
-│   ├── schema.prisma        # Database schema definition
-│   └── migrations/          # SQL migration history
-├── seeds/
-│   └── seed.js              # Database seeding logic
-└── src/
-    ├── controllers/         # Business logic (Auth, Tenant, Project)
-    ├── middleware/          # Auth, Error, & Validation middleware
-    ├── routes/              # API Endpoint definitions
-    └── utils/               # Helper functions (hash.js, jwt.js)
+├── prisma/                  # Schema modeling & migrations
+├── src/
+│   ├── controllers/         # Request handling & Response formatting
+│   ├── middleware/          # JWT validation & Tenant-ID enforcement
+│   ├── routes/              # Express router definitions
+│   └── utils/               # Cryptography & JWT generators
+
 ```
 
-## 1.3 Frontend Structure (`/frontend`)
+### 2.3 Frontend Service Implementation (`/frontend`)
 
-The frontend is built using **React** with the **Vite** build tool for fast development and optimized production builds.
+The client is a **Stateless React SPA** optimized with Vite for modern browser performance.
 
 ```text
 frontend/
-├── Dockerfile               # Frontend container config
-├── package.json             # Frontend dependencies
-├── public/                  # Static assets (index.html, icons)
-└── src/
-    ├── context/             # Global State (AuthContext.js)
-    ├── pages/               # View components (Dashboard, Login, Register)
-    ├── App.js               # Main Component & Routing
-    └── index.js             # DOM Entry point
-```
+├── src/
+│   ├── context/             # Global Auth & Tenant state providers
+│   ├── pages/               # Routed view components
+│   ├── components/          # Reusable UI primitives
+│   └── services/            # Axios interceptors for API calls
 
-## 2️. Development Setup Guide
+```
 
 ---
 
-## 2.1 Prerequisites
+## 3. Infrastructure & Deployment
 
-Before starting, ensure the following tools are installed on your machine:
+### 3.1 Container Specifications
 
-- **Docker Desktop** — Version **4.0+**  
-  _(Essential for running the full stack)_
+| Service | Image Base | Role |
+| --- | --- | --- |
+| **Database** | `postgres:15-alpine` | Relational storage & ACID compliance |
+| **API** | `node:18-alpine` | Business logic & Identity management |
+| **Client** | `node:18-alpine` | UI rendering & state management |
 
-- **Node.js** — Version **18 LTS**  
-  _(Required for local development and IntelliSense)_
+### 3.2 Service Networking
 
-- **Git** — Version **2.0+**
+All services communicate over an internal Docker bridge network.
+
+* **Backend to DB:** Authenticated via `DATABASE_URL`.
+* **Frontend to Backend:** Mediated via a configurable `VITE_API_URL` environment variable.
 
 ---
 
-## 2.2 Environment Variables
+## 4. Local Development Workflow
 
-Create a `.env` file inside the **`backend/`** directory  
-(or rely on the default values provided in `docker-compose.yml`).
+### 4.1 Prerequisites
 
-### Required Variables
+* **Runtime:** Docker Desktop 4.0+ (required for orchestration).
+* **Package Manager:** NPM 9+ (for local IntelliSense and linting).
 
-```ini
-# Server Configuration
-PORT=5000
-NODE_ENV=development
+### 4.2 Initialization Sequence
 
-# Database Connection (Docker Internal URL)
-DATABASE\_URL="postgresql://postgres:postgres@database:5432/saas\_db?schema=public"
-
-# Security
-JWT\_SECRET="your\_secure\_random\_secret\_key\_minimum\_32\_chars"
-JWT\_EXPIRES\_IN="24h"
-
-# CORS Configuration
-FRONTEND\_URL="http://localhost:3000"
-```
-
-## 2.3 Installation Steps
-
-### Clone the Repository
-
+1. **Clone & Enter:**
 ```bash
-git clone <repository_url>
-cd saas-platform
+git clone <repo_url> && cd saas-platform
+
 ```
 
-### Install Dependencies (Optional for Local Development)
 
-If you want to edit the code locally with autocomplete and IntelliSense support, install dependencies manually.
-
-#### Backend Dependencies
-
-```bash
-cd backend
-npm install
-```
-
-#### Frontend Dependencies
-
-```bash
-cd ../frontend
-npm install
-```
-
-## 2.4 How to Run Locally (Docker — Recommended)
-
-The application is designed to run using **Docker Compose**, ensuring that the **Database**, **Backend**, and **Frontend** services are correctly networked.
-
-### Build and Start Containers
-
-Run the following command from the **root directory**:
-
+2. **Environment Configuration:**
+Ensure `backend/.env` contains valid secrets for `JWT_SECRET` and `DATABASE_URL`.
+3. **Orchestration:**
 ```bash
 docker-compose up -d --build
+
 ```
 
-### Verify Services
 
-Ensure that all three containers — **database**, **backend**, and **frontend** — are running:
-
-```bash
-docker-compose ps
-```
-
-### Automatic Initialization
-
-The **backend container** is configured to automatically run the following on startup:
-
-- `prisma migrate deploy`
-- `node seeds/seed.js`
-
-Wait approximately **30–60 seconds** for the database to initialize and seed data to be populated.
+*Note: On startup, the API container automatically executes `prisma migrate deploy` and `seed.js` to prepare the environment.*
 
 ---
 
-## Access the Application
+## 5. Quality Assurance & Validation
 
-- **Frontend:** http://localhost:3000  
-- **Backend API:** http://localhost:5000  
-- **Health Check:** http://localhost:5000/api/health  
+### 5.1 Health Monitoring
 
----
-
-## 2.5 How to Run Tests
-
-Since this project relies on **Docker** for the runtime environment, testing is performed against the **running containers**.
-
-### Manual Verification (Postman / Curl)
-
-- Use the credentials provided in `submission.json` to test authentication endpoints.
-- Verify system health using the health check endpoint.
-
-#### Example: Health Check
+Verify the operational status of the service cluster:
 
 ```bash
 curl http://localhost:5000/api/health
+
 ```
 
-**Expected Output:**
+### 5.2 Persistence Validation
 
-```json
-{
-  "status": "ok",
-  "database": "connected"
-}
-```
-
-### Database Inspection
-
-To verify seeded data or inspect database tables, connect to the PostgreSQL container:
+To audit the logical isolation of data at the database level:
 
 ```bash
-docker exec -it database psql -U postgres -d saas_db
+docker exec -it database psql -U postgres -d saas_db -c "SELECT * FROM tenants;"
+
 ```
 
-Then run SQL queries, for example:
+### 5.3 Security Hardening
 
-```sql
-SELECT * FROM tenants;
-```
+* **JWT Integrity:** HS256 algorithm with a minimum 32-character secret.
+* **CORS Policy:** Restricted to `FRONTEND_URL` in production environments.
+* **Input Sanitization:** Enforced via Prisma's parameterized queries to prevent SQLi.
+
+---
