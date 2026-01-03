@@ -1,145 +1,220 @@
-# Technical Specification Document (TSD)
+# Product Requirements Document (PRD)
 
-**Application:** SaaS Project Management with Multi-Tenancy  
-**Created:** October 26, 2025  
-**Revision:** v1.0  
-**Development Status:** Greenlit for Coding  
-
----
-
-## 1️. Stakeholder Profiles
-
-Detailed analysis of the three distinct user archetypes that drive platform design decisions.
+**Product:** Multi-Tenant SaaS Project Management Platform  
+**Version:** v1.0  
+**Status:** Approved for Implementation  
+**Last Updated:** October 26, 2025  
+**Audience:** Product, Engineering, Architecture, DevOps  
 
 ---
 
-### Type A: Global System Operator (Super Admin)
+## 1. Purpose & Vision
 
-**Position Overview:**  
-Global overseer of the SaaS infrastructure, operating outside tenant boundaries to manage platform-wide operations.
+The objective of this product is to deliver a **secure, scalable, multi-tenant SaaS platform** that enables organizations to manage projects and tasks while ensuring **strict data isolation**, **role-based access control (RBAC)**, and **enterprise-grade operational reliability**.
 
-**Operational Scope:**
-- System diagnostics and capacity planning
-- Billing tier management and quota enforcement
-- Risk mitigation through tenant suspension
-- VIP client provisioning
-
-**Strategic Priorities:**
-- Infrastructure stability and economic viability
-- Tenant acquisition and retention optimization
-- Fraud detection and platform protection
-
-**Operational Gaps:**
-- "Resource utilization per tenant is opaque."
-- "Aggregate growth metrics are hard to surface."
-- "Billing changes require risky manual DB edits."
+The platform is designed to serve multiple organizations concurrently while maintaining a clean separation of concerns between **platform governance** and **tenant autonomy**.
 
 ---
 
-### Type B: Company Workspace Lead (Tenant Admin)
+## 2. Problem Statement
 
-**Position Overview:**  
-Single-organization administrator controlling internal team structure and access.
+Organizations require:
+- A **shared SaaS solution** with guaranteed data isolation
+- Clear **hierarchical control models** (Platform → Tenant → User)
+- Secure access with minimal operational friction
+- Visibility into work progress without system complexity
 
-**Operational Scope:**
-- Workspace configuration and visual identity
-- Workforce onboarding/offboarding workflows
-- Permission matrix administration
+Traditional single-tenant tools fail to scale operationally, while poorly designed multi-tenant systems introduce security and governance risks.
+
+---
+
+## 3. Target Users & Personas
+
+### 3.1 Super Admin (Platform Owner)
+
+**Goal:** Ensure platform stability, growth, and compliance.
+
+**Primary Responsibilities**
+- Global tenant management
+- Billing tier enforcement
+- Risk mitigation and tenant suspension
+- Infrastructure oversight
+
+**Pain Points**
+- Limited visibility into tenant resource usage
+- Manual intervention for billing or tenant control
+- Fragmented system-wide metrics
+
+---
+
+### 3.2 Tenant Admin (Organization Owner)
+
+**Goal:** Efficiently manage teams, projects, and access within a single organization.
+
+**Primary Responsibilities**
+- User onboarding/offboarding
+- Role and permission management
 - Project portfolio oversight
 
-**Strategic Priorities:**
-- Team velocity maximization
-- Data sovereignty assurance
-- Capacity compliance monitoring
-
-**Operational Gaps:**
-- "Team workload visibility is insufficient."
-- "Employee ramp-up cycles are protracted."
-- "Offboarded staff access lingers."
+**Pain Points**
+- Inadequate workload visibility
+- Delayed access revocation risks
+- Complex employee ramp-up workflows
 
 ---
 
-### Type C: Individual Contributor (Team Member)
+### 3.3 Standard User (Team Member)
 
-**Position Overview:**  
-Daily platform user focused on personal productivity and task delivery.
+**Goal:** Focus on task execution with minimal overhead.
 
-**Operational Scope:**
-- Task lifecycle management
-- Project collaboration participation
-- Deadline adherence tracking
-- Status reporting obligations
+**Primary Responsibilities**
+- Task execution and updates
+- Project collaboration
+- Deadline tracking
 
-**Strategic Priorities:**
-- Consistent delivery against commitments
-- Priority clarity without ambiguity
-- Minimal process friction
-
-**Operational Gaps:**
-- "UI complexity obscures personal workload."
-- "Time-sensitive obligations get buried."
-- "Project assets are difficult to surface."
+**Pain Points**
+- Overloaded or cluttered interfaces
+- Poor prioritization visibility
+- Difficulty locating relevant project assets
 
 ---
 
-## 2️. Capability Matrix
+## 4. Goals & Success Metrics
 
-Concrete implementation requirements grouped by system domain.
+### Business Goals
+- Enable rapid tenant onboarding
+- Reduce operational overhead for platform admins
+- Support future monetization models
 
----
+### Technical Goals
+- Ensure strict tenant data isolation
+- Enforce RBAC across all endpoints
+- Achieve production-grade performance and reliability
 
-### Identity & Access Management
-
-- **CAP-001:** Self-registration with org identifier, subdomain, and initial admin provisioning
-- **CAP-002:** JWT stateless auth with 24hr TTL
-- **CAP-003:** Three-tier RBAC: platform/global/tenant/user
-- **CAP-004:** Mandatory tenant scoping on scoped operations
-- **CAP-005:** Client token revocation support
-
----
-
-### Tenant Lifecycle
-
-- **CAP-006:** Default freemium tier (5 seats, 3 workspaces)
-- **CAP-007:** Admin dashboard with tenant directory
-- **CAP-008:** Plan/status reconfiguration authority
-- **CAP-009:** Hard limits on resource expansion
+### Success Metrics
+- P95 API latency under 200ms
+- Zero cross-tenant data access incidents
+- <1% authentication failure rate
 
 ---
 
-### Workforce Administration
+## 5. Functional Requirements
 
-- **CAP-010:** Seat-constrained user provisioning
-- **CAP-011:** Tenant-scoped email deduplication
-- **CAP-012:** Instant access revocation capability
-- **CAP-013:** Self-profile management (non-role)
+### 5.1 Identity & Access Management
 
----
-
-### Workspace Management
-
-- **CAP-014:** Workspace instantiation with metadata
-- **CAP-015:** Aggregated workspace analytics view
-- **CAP-016:** Recursive workspace cleanup
+| ID | Requirement |
+|----|------------|
+| FR-001 | Tenant self-registration with subdomain |
+| FR-002 | JWT-based authentication (24h TTL) |
+| FR-003 | Three-level RBAC enforcement |
+| FR-004 | Mandatory tenant scoping |
+| FR-005 | Token revocation support |
 
 ---
 
-### Work Item Management
+### 5.2 Tenant Lifecycle Management
 
-- **CAP-017:** Rich work item creation (metadata complete)
-- **CAP-018:** Intra-tenant assignment constraints
-- **CAP-019:** Atomic status mutation endpoint
-- **CAP-020:** Multi-dimensional work item discovery
+| ID | Requirement |
+|----|------------|
+| FR-006 | Default freemium tier provisioning |
+| FR-007 | Super Admin tenant directory |
+| FR-008 | Tenant plan and status control |
+| FR-009 | Hard resource limits enforcement |
 
 ---
 
-## 3️. System Qualities
+### 5.3 User & Workforce Management
 
-Engineering constraints spanning reliability, security, and operations.
+| ID | Requirement |
+|----|------------|
+| FR-010 | Seat-limited user provisioning |
+| FR-011 | Tenant-scoped email uniqueness |
+| FR-012 | Immediate user access revocation |
+| FR-013 | Self-profile management |
 
-- **QUAL-001 (Latency):** P95 < 200ms @ 100rps  
-- **QUAL-002 (Crypto):** Bcrypt@10+ for credential storage  
-- **QUAL-003 (Elasticity):** Docker-native horizontal capacity  
-- **QUAL-004 (Observability):** Proactive DB connectivity validation  
-- **QUAL-005 (Operations):** docker-compose single-command deploy  
-- **QUAL-006 (Adaptivity):** Fluid mobile/desktop rendering
+---
+
+### 5.4 Workspace & Project Management
+
+| ID | Requirement |
+|----|------------|
+| FR-014 | Workspace creation with metadata |
+| FR-015 | Aggregated analytics per workspace |
+| FR-016 | Recursive workspace cleanup |
+| FR-017 | Project and task lifecycle management |
+
+---
+
+### 5.5 Task Management
+
+| ID | Requirement |
+|----|------------|
+| FR-018 | Task creation with metadata |
+| FR-019 | Intra-tenant assignment enforcement |
+| FR-020 | Atomic task status updates |
+| FR-021 | Advanced task filtering |
+
+---
+
+## 6. Non-Functional Requirements
+
+### Performance
+- P95 latency < 200ms @ 100 RPS
+
+### Security
+- Password hashing with Bcrypt (10+ rounds)
+- JWT authentication and RBAC middleware
+
+### Scalability
+- Docker-native horizontal scaling
+- Stateless backend architecture
+
+### Reliability & Operations
+- Database connectivity health checks
+- One-command Docker deployment
+
+### Usability
+- Responsive UI (mobile & desktop)
+- Minimal cognitive load for end users
+
+---
+
+## 7. Assumptions & Constraints
+
+- Shared PostgreSQL database with tenant-based logical isolation
+- Initial deployment via Docker Compose
+- No external billing provider in v1
+- Single-region deployment
+
+---
+
+## 8. Out of Scope (v1)
+
+- Native mobile applications
+- Real-time collaboration (WebSockets)
+- External billing integrations
+- Multi-region data replication
+
+---
+
+## 9. Dependencies
+
+- PostgreSQL 15+
+- Node.js 18+
+- Docker & Docker Compose
+- Modern web browser
+
+---
+
+## 10. Risks & Mitigations
+
+| Risk | Mitigation |
+|-----|------------|
+| Cross-tenant data leaks | Mandatory tenant scoping |
+| Privilege escalation | Centralized RBAC middleware |
+| Performance degradation | Indexing & query optimization |
+| Operational misconfiguration | Containerized deployments |
+
+---
+
+This PRD serves as the **single source of truth** for product development and implementation decisions.
