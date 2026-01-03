@@ -1,182 +1,143 @@
-# CloudScale: Enterprise Multi-Tenant SaaS Framework
+# Multi-Tenant SaaS Platform
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D%2018.0.0-brightgreen)](https://nodejs.org/)
-[![Docker](https://img.shields.io/badge/docker-supported-blue)](https://www.docker.com/)
-[![Prisma](https://img.shields.io/badge/ORM-Prisma-2D3748)](https://www.prisma.io/)
+## Description
+A comprehensive B2B SaaS application built to demonstrate **Multi-Tenancy**, **Data Isolation**, and **Role-Based Access Control (RBAC)**. This platform allows organizations (Tenants) to sign up, manage their own isolated workspace, add team members, and track projects and tasks.
 
----
+The system features a strict hierarchy where a **Super Admin** manages tenants, **Tenant Admins** manage their organization's data and users, and **Standard Users** work on assigned tasks.
 
-## Project Overview
+## Key Features
+* **Multi-Tenancy Architecture:** Complete data isolation between different organizations using Tenant IDs.
+* **Secure Authentication:** JWT-based login with hashed passwords (Bcrypt) and session management.
+* **Role-Based Access Control (RBAC):** Distinct permissions for Super Admins, Tenant Admins, and Users.
+* **Project Management:** Create, update, and track status of projects specific to a tenant.
+* **Task Orchestration:** Assign tasks to team members with priorities and deadlines.
+* **Team Management:** Tenant Admins can invite/remove users and manage their roles.
+* **Super Admin Dashboard:** A global view for system administrators to monitor all registered tenants.
+* **Responsive UI:** A modern, user-friendly Dashboard built with React.
 
-CloudScale is a production-ready Enterprise Multi-Tenant SaaS Framework designed for startups and teams building B2B platforms.
+## Technology Stack
 
-It solves the hardest SaaS problems out-of-the-box:
+### **Frontend**
+* **Framework:** React.js (v18)
+* **State Management:** React Context API
+* **Routing:** React Router DOM (v6)
+* **HTTP Client:** Axios
+* **Styling:** CSS3 (Responsive Flexbox/Grid)
 
-- Multi-Tenancy
-- Strict Data Isolation
-- Role-Based Access Control (RBAC)
-- Audit Logging
-- Subscription Billing (Stripe)
+### **Backend**
+* **Runtime:** Node.js (v18)
+* **Framework:** Express.js
+* **ORM:** Prisma
+* **Security:** JSON Web Tokens (JWT), Bcrypt, CORS
+* **Validation:** Express Validator
 
-CloudScale follows a Shared Database, Isolated Rows architecture, allowing thousands of tenants to safely coexist inside a single PostgreSQL database while guaranteeing logical and physical data separation.
+### **Database & DevOps**
+* **Database:** PostgreSQL (v15)
+* **Containerization:** Docker & Docker Compose
+* **Environment:** Linux (Alpine) containers
 
----
+## Architecture Overview
+The application follows a **Client-Server** architecture. The React frontend communicates with the Node.js/Express backend via REST APIs. The backend connects to a PostgreSQL database, ensuring that every query is scoped by `tenant_id` to prevent data leaks between organizations.
 
-## System Architecture & Request Flow
 
-Request → Tenant Context pipeline:
-
-1. Tenant ID extracted from JWT or trusted request header  
-2. User authorization verified against tenant  
-3. Prisma automatically scopes queries using tenant_id  
-4. Only tenant-isolated data is returned  
-
-Tenant A can never access Tenant B data.
-
----
-
-## Core Capabilities
-
-- Dynamic Tenant Provisioning
-- Advanced RBAC (Super Admin, Tenant Admin, User)
-- Immutable Audit Logs
-- Real-Time WebSocket Sync
-- Stripe Subscription Billing
-- Docker-First Deployment
-
----
-
-## Project Structure
-
-```text
-.
-├── backend/
-│   ├── prisma/
-│   │   ├── schema.prisma
-│   │   └── migrations/
-│   ├── src/
-│   │   ├── middleware/
-│   │   ├── controllers/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   └── utils/
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── context/
-│   │   └── pages/
-│   └── Dockerfile
-├── docker-compose.yml
-└── README.md
-```
-
----
 
 ## Installation & Setup
 
-### Quick Start (Docker – Recommended)
+### **Prerequisites**
+* Docker & Docker Compose (Recommended)
+* Node.js v18+ (For local non-Docker setup)
+* PostgreSQL (For local non-Docker setup)
 
-```bash
-git clone https://github.com/gowrishjanapareddy/saas_project_5.git
-cd saas_project_5
+### **Method 1: Docker (Fastest & Recommended)**
+This method automatically sets up the Database, Backend, and Frontend.
 
-cat <<EOF > .env
-POSTGRES_USER=dev_admin
-POSTGRES_PASSWORD=dev_password_99
-POSTGRES_DB=cloudscale_db
-DATABASE_URL=postgresql://dev_admin:dev_password_99@postgres:5432/cloudscale_db
-JWT_SECRET=your_32_character_random_string
-STRIPE_SECRET_KEY=sk_test_your_key_here
-EOF
+1.  **Clone the Repository**
+    ```bash
+    git clone <your-repo-url>
+    cd Multi-Tenant-SaaS-Platform
+    ```
 
-docker-compose up -d --build
+2.  **Configure Environment**
+    Create a `.env` file in the root directory (or ensure `docker-compose.yml` variables are correct):
+    ```properties
+    POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=postgres
+    POSTGRES_DB=saas_db
+    ```
 
-docker-compose exec backend npx prisma migrate dev --name init
-docker-compose exec backend npm run seed
-```
+3.  **Launch Application**
+    ```bash
+    docker-compose up -d --build
+    ```
 
----
+4.  **Access the App**
+    * **Frontend:** [http://localhost:3000](http://localhost:3000)
+    * **Backend Health Check:** [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
-### Manual Development Setup (Without Docker)
+    *Note: The system automatically runs migrations and seeds default data on startup.*
 
-```bash
-cd backend
-npm install
-npx prisma generate
-npx prisma migrate dev
-npm run dev
+### **Method 2: Local Development (Manual)**
 
-cd frontend
-npm install
-npm start
-```
+<details>
+<summary>Click to expand manual setup instructions</summary>
 
----
+1.  **Database Setup**
+    Ensure PostgreSQL is running locally on port 5432.
 
-## Stripe Integration
+2.  **Backend Setup**
+    ```bash
+    cd backend
+    npm install
+    cp .env.example .env
+    # Update .env with your local DB credentials
+    npx prisma migrate dev --name init
+    npm run seed
+    npm start
+    ```
 
-```text
-Webhook Endpoint: /api/v1/webhooks/stripe
-Plan Config: backend/src/config/plans.ts
-Frontend Hook: useCheckout()
-```
+3.  **Frontend Setup**
+    ```bash
+    cd frontend
+    npm install
+    npm start
+    ```
+</details>
 
----
+## Environment Variables
 
-## API Reference (v1)
+The application requires the following variables. See `.env.example` in the backend folder.
 
-```text
-POST /api/v1/auth/signup   - Register Tenant + Admin
-POST /api/v1/auth/login    - Authenticate and receive JWT
-GET  /api/v1/projects      - Fetch tenant projects
-GET  /api/v1/users         - List organization members
-```
+| Variable | Description | Default (Docker) |
+| :--- | :--- | :--- |
+| `PORT` | Backend Server Port | `5000` |
+| `DATABASE_URL` | PostgreSQL Connection String | `postgresql://...@database:5432/saas_db` |
+| `JWT_SECRET` | Secret key for signing tokens | (Set your own secure key) |
+| `FRONTEND_URL` | URL for CORS configuration | `http://localhost:3000` |
 
-All endpoints are automatically tenant-scoped.
+## API Documentation
 
----
+### **Authentication**
+* `POST /api/auth/register-tenant` - Register a new Organization
+* `POST /api/auth/login` - User Login
 
-## Development Credentials
+### **Projects & Tasks**
+* `GET /api/projects` - List all projects for current tenant
+* `POST /api/projects` - Create a new project
+* `POST /api/projects/:id/tasks` - Add a task to a project
+* `PATCH /api/tasks/:id/status` - Update task status
 
-```text
-System Super Admin
-Email: root@cloudscale.io
-Password: CloudScale@2025
+### **Management**
+* `GET /api/tenants` - (Super Admin) List all tenants
+* `GET /api/tenants/:id/users` - (Tenant Admin) List employees
+* `POST /api/tenants/:id/users` - (Tenant Admin) Add employee
 
-Organization Admin
-Email: admin@acme-corp.com
-Password: AcmePass123
+## Testing Credentials (Seed Data)
 
-Standard User
-Email: user@acme-corp.com
-Password: UserPass123
-```
+**Super Admin:**
+* Email: `superadmin@system.com`
+* Password: `Admin@123`
 
----
-
-## Contribution Guide
-
-```bash
-git checkout -b feature/AmazingFeature
-git commit -m "feat: add amazing feature"
-git push origin feature/AmazingFeature
-```
-
-Open a Pull Request on GitHub.
-
----
-
-## License
-
-MIT License
-
----
-
-## Support
-
-If this project helps you, please star the repository.
-
-Happy Building 
+**Tenant Admin (Demo Company):**
+* Email: `admin@demo.com`
+* Password: `Admin@123`
+* Subdomain: `demo`
