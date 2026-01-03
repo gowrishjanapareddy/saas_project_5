@@ -1,4 +1,4 @@
-# Multi-Tenant SaaS Platform
+# Multi-Tenant SaaS Platforms
 
 ## Description
 A comprehensive B2B SaaS application built to demonstrate **Multi-Tenancy**, **Data Isolation**, and **Role-Based Access Control (RBAC)**. This platform allows organizations (Tenants) to sign up, manage their own isolated workspace, add team members, and track projects and tasks.
