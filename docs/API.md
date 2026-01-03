@@ -1,19 +1,24 @@
-# Multi-Tenant SaaS Platform – API Reference
+# Multi-Tenant SaaS Platform – API Reference 
 
-This document describes the REST API for a multi-tenant project management platform, including authentication, tenant administration, user management, projects, and tasks.
+This document provides a **comprehensive REST API reference** for the **Multi-Tenant SaaS Project Management Platform**.  
+It is intended for **backend developers, frontend integrators, and system architects** who need a clear contract for interacting with the platform.
 
 ---
 
 ## Authentication & Security
 
-- **Auth Scheme:** Bearer authentication using JSON Web Tokens (JWT)  
-- **HTTP Header (required for protected routes):**  
-  `Authorization: Bearer <access_token>`  
-- **Access Token Lifetime:** 24 hours per issued token  
-- **Base URL (Local Dev):**  
-  `http://localhost:5000/api`
+- **Authentication Scheme:** Bearer Token (JWT)
+- **Header Format:**
+  ```http
+  Authorization: Bearer <access_token>
+  ```
+- **Token Validity:** 24 hours
+- **Base URL (Local Development):**
+  ```
+  http://localhost:5000/api
+  ```
 
-All endpoints that are not explicitly marked as **Public** require a valid JWT in the `Authorization` header. [web:21][web:39]
+ All endpoints are **protected by default** unless explicitly marked as **Public**.
 
 ---
 
@@ -21,13 +26,13 @@ All endpoints that are not explicitly marked as **Public** require a valid JWT i
 
 ### 1.1 Health Check
 
-Use this endpoint to quickly verify that the API is reachable and the database is online.
+Verify API availability and database connectivity.
 
-- **Method & Path:** `GET /health`  
-- **Visibility:** Public (no token required)
+- **Method:** `GET`
+- **Endpoint:** `/health`
+- **Access:** Public
 
-#### Example Success Response (200 OK)
-
+#### Response (200 OK)
 ```json
 {
   "status": "ok",
@@ -41,13 +46,13 @@ Use this endpoint to quickly verify that the API is reachable and the database i
 
 ### 2.1 Register Tenant (Initial Onboarding)
 
-Creates a brand-new **tenant account** and the corresponding **first admin user** in a single step.
+Creates a new tenant and the first tenant admin user.
 
-- **Method & Path:** `POST /auth/register-tenant`  
-- **Visibility:** Public
+- **Method:** `POST`
+- **Endpoint:** `/auth/register-tenant`
+- **Access:** Public
 
 #### Request Body
-
 ```json
 {
   "tenantName": "Acme Corp",
@@ -58,7 +63,6 @@ Creates a brand-new **tenant account** and the corresponding **first admin user*
 ```
 
 #### Response (201 Created)
-
 ```json
 {
   "message": "Tenant registered successfully",
@@ -68,15 +72,15 @@ Creates a brand-new **tenant account** and the corresponding **first admin user*
 
 ---
 
-### 2.2 Login (Obtain JWT)
+### 2.2 Login (JWT Issuance)
 
-Authenticates a user with email and password and returns a signed JWT to be used in subsequent requests.
+Authenticates a user and returns a signed JWT.
 
-- **Method & Path:** `POST /auth/login`  
-- **Visibility:** Public
+- **Method:** `POST`
+- **Endpoint:** `/auth/login`
+- **Access:** Public
 
 #### Request Body
-
 ```json
 {
   "email": "admin@acme.com",
@@ -85,7 +89,6 @@ Authenticates a user with email and password and returns a signed JWT to be used
 ```
 
 #### Response (200 OK)
-
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsIn...",
@@ -100,14 +103,13 @@ Authenticates a user with email and password and returns a signed JWT to be used
 
 ---
 
-### 2.3 Get Current User (Session Introspection)
+### 2.3 Get Current User
 
-Returns the profile of the user associated with the provided JWT.
+Returns the authenticated user's profile.
 
-- **Method & Path:** `GET /auth/me`  
-- **Visibility:** Protected (any authenticated role)
-
-#### Response (200 OK)
+- **Method:** `GET`
+- **Endpoint:** `/auth/me`
+- **Access:** Protected (any authenticated role)
 
 ```json
 {
@@ -122,18 +124,13 @@ Returns the profile of the user associated with the provided JWT.
 
 ---
 
-## 3. Tenant Operations (Super Admin Scope)
-
-These endpoints are intended for **platform-level** administrators managing all tenants.
+## 3. Tenant Operations (Super Admin Only)
 
 ### 3.1 List All Tenants
 
-Fetches a catalog of every tenant registered in the system.
-
-- **Method & Path:** `GET /tenants`  
-- **Visibility:** Protected – `super_admin` only
-
-#### Response (200 OK)
+- **Method:** `GET`
+- **Endpoint:** `/tenants`
+- **Role Required:** `super_admin`
 
 ```json
 {
@@ -152,12 +149,9 @@ Fetches a catalog of every tenant registered in the system.
 
 ### 3.2 Get Tenant by ID
 
-Retrieves metadata for a specific tenant.
-
-- **Method & Path:** `GET /tenants/:id`  
-- **Visibility:** Protected – `super_admin` only
-
-#### Response (200 OK)
+- **Method:** `GET`
+- **Endpoint:** `/tenants/:id`
+- **Role Required:** `super_admin`
 
 ```json
 {
@@ -169,14 +163,11 @@ Retrieves metadata for a specific tenant.
 
 ---
 
-### 3.3 Update Tenant Configuration
+### 3.3 Update Tenant
 
-Allows editing of core tenant properties, such as name or lifecycle status.
-
-- **Method & Path:** `PUT /tenants/:id`  
-- **Visibility:** Protected – `super_admin` only
-
-#### Request Body
+- **Method:** `PUT`
+- **Endpoint:** `/tenants/:id`
+- **Role Required:** `super_admin`
 
 ```json
 {
@@ -187,18 +178,13 @@ Allows editing of core tenant properties, such as name or lifecycle status.
 
 ---
 
-## 4. User Management (Within a Tenant)
+## 4. User Management (Tenant Scope)
 
-These endpoints are used by a **Tenant Admin** to manage members of their own organization.
+### 4.1 List Tenant Users
 
-### 4.1 Get Users for a Tenant
-
-Returns all users currently associated with the specified tenant.
-
-- **Method & Path:** `GET /tenants/:tenantId/users`  
-- **Visibility:** Protected – `tenant_admin`
-
-#### Response (200 OK)
+- **Method:** `GET`
+- **Endpoint:** `/tenants/:tenantId/users`
+- **Role Required:** `tenant_admin`
 
 ```json
 {
@@ -214,12 +200,9 @@ Returns all users currently associated with the specified tenant.
 
 ### 4.2 Create Tenant User
 
-Adds a new user account under a given tenant.
-
-- **Method & Path:** `POST /tenants/:tenantId/users`  
-- **Visibility:** Protected – `tenant_admin`
-
-#### Request Body
+- **Method:** `POST`
+- **Endpoint:** `/tenants/:tenantId/users`
+- **Role Required:** `tenant_admin`
 
 ```json
 {
@@ -234,12 +217,9 @@ Adds a new user account under a given tenant.
 
 ### 4.3 Update Tenant User
 
-Updates the details or role of an existing user.
-
-- **Method & Path:** `PUT /users/:id`  
-- **Visibility:** Protected – `tenant_admin`
-
-#### Request Body
+- **Method:** `PUT`
+- **Endpoint:** `/users/:id`
+- **Role Required:** `tenant_admin`
 
 ```json
 {
@@ -252,25 +232,19 @@ Updates the details or role of an existing user.
 
 ### 4.4 Delete Tenant User
 
-Removes a user from the tenant so they can no longer access the workspace.
-
-- **Method & Path:** `DELETE /users/:id`  
-- **Visibility:** Protected – `tenant_admin`
+- **Method:** `DELETE`
+- **Endpoint:** `/users/:id`
+- **Role Required:** `tenant_admin`
 
 ---
 
 ## 5. Project Management
 
-Project endpoints operate within the scope of the current tenant.
+### 5.1 List Projects
 
-### 5.1 List Projects for Current Tenant
-
-Lists all projects visible to the authenticated user’s tenant.
-
-- **Method & Path:** `GET /projects`  
-- **Visibility:** Protected – `user` or `admin`
-
-#### Response (200 OK)
+- **Method:** `GET`
+- **Endpoint:** `/projects`
+- **Access:** `user`, `admin`
 
 ```json
 {
@@ -284,14 +258,11 @@ Lists all projects visible to the authenticated user’s tenant.
 
 ---
 
-### 5.2 Create a New Project
+### 5.2 Create Project
 
-Registers a new project instance under the tenant context.
-
-- **Method & Path:** `POST /projects`  
-- **Visibility:** Protected – `admin`
-
-#### Request Body
+- **Method:** `POST`
+- **Endpoint:** `/projects`
+- **Access:** `admin`
 
 ```json
 {
@@ -303,23 +274,11 @@ Registers a new project instance under the tenant context.
 
 ---
 
-### 5.3 Get Project by ID
+### 5.3 Update Project
 
-Returns the details for a specific project.
-
-- **Method & Path:** `GET /projects/:id`  
-- **Visibility:** Protected – `user` or `admin`
-
----
-
-### 5.4 Update Project
-
-Modifies the metadata or status of an existing project.
-
-- **Method & Path:** `PUT /projects/:id`  
-- **Visibility:** Protected – `admin`
-
-#### Request Body
+- **Method:** `PUT`
+- **Endpoint:** `/projects/:id`
+- **Access:** `admin`
 
 ```json
 {
@@ -327,24 +286,14 @@ Modifies the metadata or status of an existing project.
 }
 ```
 
-> **Hint:**  
-> To support hard deletion of a project, expose:  
-> `DELETE /projects/:id`
-
 ---
 
 ## 6. Task Management
 
-Tasks are always created within the context of a specific project.
+### 6.1 List Tasks
 
-### 6.1 List Tasks for a Project
-
-Retrieves all tasks belonging to a particular project.
-
-- **Method & Path:** `GET /projects/:projectId/tasks`  
-- **Visibility:** Protected – `user` or `admin`
-
-#### Response (200 OK)
+- **Method:** `GET`
+- **Endpoint:** `/projects/:projectId/tasks`
 
 ```json
 {
@@ -358,14 +307,11 @@ Retrieves all tasks belonging to a particular project.
 
 ---
 
-### 6.2 Create Task in Project
+### 6.2 Create Task
 
-Adds a new task item inside a project.
-
-- **Method & Path:** `POST /projects/:projectId/tasks`  
-- **Visibility:** Protected – `admin`
-
-#### Request Body
+- **Method:** `POST`
+- **Endpoint:** `/projects/:projectId/tasks`
+- **Access:** `admin`
 
 ```json
 {
@@ -378,14 +324,10 @@ Adds a new task item inside a project.
 
 ---
 
-### 6.3 Change Task Status (Partial Update)
+### 6.3 Update Task Status
 
-Provides a focused endpoint to change only the status of an existing task, which is ideal for Kanban-style interactions.
-
-- **Method & Path:** `PATCH /tasks/:id/status`  
-- **Visibility:** Protected – `user` or `admin`
-
-#### Request Body
+- **Method:** `PATCH`
+- **Endpoint:** `/tasks/:id/status`
 
 ```json
 {
@@ -395,14 +337,11 @@ Provides a focused endpoint to change only the status of an existing task, which
 
 ---
 
-### 6.4 Update Task (Full Update)
+### 6.4 Update Task (Full)
 
-Allows full editing of a task’s fields such as title, priority, and other attributes.
-
-- **Method & Path:** `PUT /tasks/:id`  
-- **Visibility:** Protected – `admin`
-
-#### Request Body
+- **Method:** `PUT`
+- **Endpoint:** `/tasks/:id`
+- **Access:** `admin`
 
 ```json
 {
@@ -410,3 +349,17 @@ Allows full editing of a task’s fields such as title, priority, and other attr
   "priority": "MEDIUM"
 }
 ```
+
+---
+
+## Notes
+
+- All queries are automatically **scoped by tenantId**
+- RBAC is enforced at the **middleware level**
+- Designed for **scalability, security, and SaaS compliance**
+
+---
+
+## License
+
+This API documentation is provided for **educational and portfolio purposes**.
